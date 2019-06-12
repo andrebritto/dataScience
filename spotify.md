@@ -3,6 +3,7 @@ Referencias:
 Exemplo de analises:
 + https://www.kaggle.com/aeryan/spotify-music-analysis/data
 + https://www.kaggle.com/nadintamer/what-makes-top-spotify-songs-popular
++ https://insights.spotify.com/us/2017/10/03/genres-and-key-signatures/
 
 
 
