@@ -22,6 +22,8 @@ https://www.kaggle.com/zaheenhamidani/ultimate-spotify-tracks-db
 Referencia das classes dos dados do spotify
 + https://developer.spotify.com/documentation/web-api/reference/tracks/get-audio-features/
 
+Codigo dos paies:
++https://gist.github.com/frankkienl/a594807bf0dcd23fdb1b
 
 DataSets
 + https://www.kaggle.com/zaheenhamidani/ultimate-spotify-tracks-db/
