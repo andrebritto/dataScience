@@ -28,6 +28,7 @@ Codigo dos paies:
 DataSets
 + https://www.kaggle.com/zaheenhamidani/ultimate-spotify-tracks-db/
 + https://www.kaggle.com/edumucelli/spotifys-worldwide-daily-song-ranking/
++ https://www.kaggle.com/nadintamer/top-spotify-tracks-of-2018
 
 Perguntas:
 + 1 - Qual são os 10 generos musical mais popular por continente
