@@ -6,6 +6,8 @@ Exemplo de analises:
 + https://insights.spotify.com/us/2017/10/03/genres-and-key-signatures/
 + https://insights.spotify.com/us/2015/05/06/most-popular-keys-on-spotify/
 + https://insights.spotify.com/int/2017/10/03/genres-and-key-signatures/
++ https://www.kaggle.com/caicell/spotify-chart-trend-seasonal-arima/notebook
+
 
 Referencia:
 
