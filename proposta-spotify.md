@@ -33,9 +33,8 @@ DataSets
 + https://www.kaggle.com/nadintamer/top-spotify-tracks-of-2018
 
 Perguntas:
-+ 1 - Qual são os 10 generos musical mais popular por continente
-+ 2 - Quem é o artista mais popular em cada genero
-+ 3 - montar uma playlist com 10 musicas por genero com base nos artistas mais populares
-+ 4 - montar uma playlist com 10 musicas por genero com base nos artistas similares aos populares
-+ 5 - Quais as escalas musicais mais utilizadas no 10 generos mais populares
++ 1 - Qual são os 10 generos musical mais popular por continente ?
++ 2 - Quem é o artista mais popular em cada genero do item 1 ?
++ 3 - Quais são as 10 musicas mais tocadas dos artistas mais populares ?
++ 4 - Existe alguma influencia da energia, dançabilidade e valencia na preferencia da audiência: 
 
