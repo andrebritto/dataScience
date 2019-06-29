@@ -1,78 +1,85 @@
+---
+title: "Analise Musicas Spotify"
+author: "André Britto"
+date: "23/06/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("markdown")
 library(dplyr)
 library(readr)
 library(ggplot2)
-library(GGally)
-library(gridExtra)
-library(grid)
 library(treemap)
 library(DT)
+```
 
-setwd('dataset/')
+### Analise de Músicas do Spotify
 
-# 1 - Qual são os 10 generos musical mais popular (numero de stream) por continente (separadamente)
+## I - Cada Continente tem seu Estilo
 
-df_features <- read_csv('SpotifyFeatures.csv',locale = locale(encoding = "UTF-8"))
+```{r  fig.height=7, fig.width = 11, warning = FALSE}
 
+df_features <- read_csv('dataset/SpotifyFeatures.csv',locale = locale(encoding = "UTF-8"))
+```
+
+```{r  fig.height=7, fig.width = 11, warning = FALSE, include = FALSE, echo=FALSE}
 
 musica_genero<-df_features %>% select(track_name,genre,popularity,danceability,energy, valence)
-
 musica_genero <-musica_genero %>% group_by(track_name) %>% top_n(1,popularity)
-
 musica_genero <- musica_genero %>% top_n(1,genre)
-
 colnames(musica_genero)<-c('faixa','genero','popularidade','danceability','energy','valence')
-
 musica_genero <- musica_genero[,c('faixa','genero','popularidade','danceability','energy','valence')]
-
-musica_genero[,"genero"] %>% distinct()
-
-
-df_stream_17_18 <- read_csv('data-spotifyStreamming.csv',locale = locale(encoding = "UTF-8"))
+df_stream_17_18 <- read_csv('dataset/data-spotifyStreamming.csv',locale = locale(encoding = "UTF-8"))
 df_stream_17_18$Region <-toupper(df_stream_17_18$Region)
 colnames(df_stream_17_18) <-  c('posicao','faixa','artista','execucao','url','data_execucao','region')
-
-head(df_stream_17_18,50)
-
 df_tocadas <- df_stream_17_18 %>% filter( !is.na(artista) ) 
-
 rm(df_stream_17_18)
-
 tocadas_musica_genero<-inner_join(df_tocadas,musica_genero)
-
 tocadas_musica_genero <- tocadas_musica_genero[,c("faixa","artista","data_execucao","region","genero",'popularidade','danceability','energy','valence')]
-
-df_paises <- read_csv('iso3166.csv',locale = locale(encoding = "UTF-8"))[,c("name","alpha-2","region","sub-region")]
+df_paises <- read_csv('dataset/iso3166.csv',locale = locale(encoding = "UTF-8"))[,c("name","alpha-2","region","sub-region")]
 colnames(df_paises) <-  c('pais','sigla','continente','sub-continente')
-
 tocadas_musica_genero_pais_continente <- inner_join(tocadas_musica_genero,df_paises, by=c("region" = "sigla"))
 
-rm(tocadas_musica_genero,df_paises,df_tocadas, df_tocadas_regiao, musica_genero)
+#rm(tocadas_musica_genero,df_paises,df_tocadas, df_tocadas_regiao, musica_genero)
+```
+
+
+```{r  fig.height=7, fig.width = 11, warning = FALSE}
 
 # relatorios ###################################################
 # quest01 - 1 - Qual são os 5 generos musical mais popular por continente
 
-
 quest01 <-  tocadas_musica_genero_pais_continente %>% 
   group_by(continente, genero) %>% summarise(qtd = n())
-
 resp01 <- quest01 %>% arrange(-qtd,continente) %>% top_n(5)
 resp01 <- resp01 %>% group_by(genero) %>% mutate(percent=round(100*(qtd/sum(resp01$qtd)),2))
-resp01
+
+```
+
+### Tabela de Execução de Genero por Continente
+
+```{r  fig.height=7, fig.width = 11, warning = FALSE}
 DT::datatable(resp01, class = 'cell-border stripe')
+```
 
-
+### Grafico de Execução por Genero
+```{r  fig.height=7, fig.width = 11, warning = FALSE}
 total_qtd = sum(resp01$qtd)
-total_qtd
-# Grafico da resposta 01
+
 ggplot(data = resp01, aes(x=continente, y=genero, label= paste(round(percent,2),'%') , fill= percent)) + 
   geom_tile() +
   geom_text()+
-  labs(title = "Total de Execução de Generos em Cada Continente", x='',y='') +
+  labs(title = "Total de Execução por Genero", x='',y='') +
   guides(fill=guide_legend(title = paste("% Sobre o \n Total de Execuções:", total_qtd )))
 
+# Librando memoria
 rm(quest01)
+```
 
-# Quest02 - Quem é o artista mais popular em cada genero
+## II - Quem dita a Moda 
+```{r  fig.height=7, fig.width = 11, warning = FALSE}
 
 quest02 <-tocadas_musica_genero_pais_continente %>%
   select (genero, artista) %>% 
@@ -82,11 +89,9 @@ quest02 <-tocadas_musica_genero_pais_continente %>%
 
 resp02 <- quest02 %>%  arrange(-qtd_toca) %>% top_n(1)
 
-resp02
+```
 
-rm(quest02)
-
-# Grafico da resposta 02
+```{r  fig.height=7, fig.width = 11, warning = FALSE}
 ggplot(resp02, aes(x=resp02$qtd_toca, y=resp02$artista, color=resp02$genero)) +
   geom_point(size=3) +
   geom_text(label=resp02$qtd_toca, nudge_x = 0.25, nudge_y = 0.25, check_overlap = T) +
@@ -94,10 +99,11 @@ ggplot(resp02, aes(x=resp02$qtd_toca, y=resp02$artista, color=resp02$genero)) +
   labs(title = "Total de Execução de Generos em Cada Continente", x='',y='') +
   guides(color=guide_legend(title ="Genero"))
 
+```
 
+## III - As Top 10 dos Estilosos
 
-# quest03 - montar uma playlist com 10 musicas por genero com base nos artistas mais populares
-
+```{r  fig.height=7, fig.width = 11, warning = FALSE}
 artistas_10_mais <- head(resp02 %>% arrange(-qtd_toca), 10)
 artistas_10_mais <- artistas_10_mais['artista'] %>% distinct() %>% unlist
 
@@ -108,27 +114,27 @@ arrange(artista) %>%
   distinct() %>%
   group_by(artista) %>%
   top_n(10)
+```
 
-#resp03
+```{r  fig.height=7, fig.width = 11, warning = FALSE}
  DT::datatable(resp03, class = 'cell-border stripe')
 
- # artista mais famoso - que toca em mais paises
- 
- #artis_pais_continente <-tocadas_musica_genero_pais_continente [sample(nrow(tocadas_musica_genero_pais_continente),100),c('artista', 'pais', "continente")]
- 
- artis_pais_continente <-tocadas_musica_genero_pais_continente [,c('artista', 'pais', "continente")]
- 
- artis_pais_continente %>% arrange(artista)
- 
- resp_aux <-artis_pais_continente %>% group_by(artista) %>% count(continente) %>% arrange(-n)
- resp_aux <- head(resp_aux,100)
- 
- resp04 <- resp_aux %>% group_by(artista,continente) %>% summarise(rnk = max(n))
- 
- resp04 <-resp04 %>% group_by(continente) %>% top_n(3)
- 
- png(filename="tree.png",width=800, height=800)
- treemap(resp04,
+```
+
+## IV - Os Reis dos Quatro Cantos do Mundo
+
+```{r  fig.height=7, fig.width = 11, warning = FALSE}
+artis_pais_continente <-tocadas_musica_genero_pais_continente [,c('artista', 'pais', "continente")]
+artis_pais_continente %>% arrange(artista)
+resp_aux <-artis_pais_continente %>% group_by(artista) %>% count(continente) %>% arrange(-n)
+resp_aux <- head(resp_aux,100)
+resp04 <- resp_aux %>% group_by(artista,continente) %>% summarise(rnk = max(n))
+resp04 <-resp04 %>% group_by(continente) %>% top_n(3)
+rm(resp_aux)
+```
+
+```{r  fig.height=7, fig.width = 11, warning = FALSE}
+treemap(resp04,
          # definindo os niveis hierarquicos
          index = c("continente", "artista"),
          # variavel numerica que define o tamanho dos blocos
@@ -136,46 +142,13 @@ arrange(artista) %>%
          # titulo
          title = "Os Reis dos Quatro Cantos",
          # definir estilo da fonte e ajuste vertical para cada um dos niveis hierarquicos
-         fontface.labels = c("oblique", "bold", "italic"),
          fontsize.labels = c(12,10),
          align.labels = list(c("centre","centre"),c("left","top")),
          ymod.labels = c(0.6, 0, 0)
  ) 
+```
 
- 
- 
- rm(musica_genero, df_paises,tocadas_musica_genero, artistas_10_mais)
+## V - Tentativa de predição ...
 
-
-## Validar popularidade
-# Verificação de correlação entre a indicador de popularidade 
-modelo.dado <- df_features[c("popularity" ,"danceability","energy","valence")]
-
-# Pegando amostra
-#lista_index <- sample(1:150000, 150000, replace=TRUE)
-#modelo.dado <- modelo.dado[lista_index,]
-
-# Analisar a correlação entre as variáveis popularidade, danceability, energy e valence"
-
-library("ggcorrplot")
-# Compute a correlation matrix
-corr <- round(cor(modelo.dado), 1)
-corr
-# Os coeficientes próximos de zero mostram uma correlação fraca e os proximos de 1 uma correlação forte
-
-# Visualização dos coeficientes de correlação
-ggcorrplot(corr, p.mat = cor_pmat(modelo.dado),
-           hc.order = TRUE, type = "lower",
-           color = c("#FC4E07", "white", "#00AFBB"),
-           outline.col = "white", lab = TRUE)
-
-# As correlações mais fortes valence com danceability e valence com energy 
-# A variavel popularidade não é explicada por nenhuma das relações
-
-modelo.ajuste01 <- lm(modelo.dado$valence ~ modelo.dado$danceability)
-summary(modelo.ajuste01)
-ggplot(modelo.dado, aes(x=modelo.dado$valence, y=modelo.dado$danceability)) + 
-  geom_point() +
-  geom_smooth(method=lm)
-
-  
+```{r  fig.height=7, fig.width = 11, warning = FALSE}
+```
