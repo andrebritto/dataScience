@@ -13,7 +13,6 @@ setwd('dataset/')
 
 df_features <- read_csv('SpotifyFeatures.csv',locale = locale(encoding = "UTF-8"))
 
-
 musica_genero<-df_features %>% select(track_name,genre,popularity,danceability,energy, valence)
 
 musica_genero <-musica_genero %>% group_by(track_name) %>% top_n(1,popularity)
@@ -169,7 +168,7 @@ ggcorrplot(corr, p.mat = cor_pmat(modelo.dado),
            color = c("#FC4E07", "white", "#00AFBB"),
            outline.col = "white", lab = TRUE)
 
-# As correlações mais fortes valence com danceability e valence com energy 
+# As correlações mais fortes são: valence com danceability e valence com energy 
 # A variavel popularidade não é explicada por nenhuma das relações
 
 modelo.ajuste01 <- lm(modelo.dado$valence ~ modelo.dado$danceability)

@@ -13,6 +13,7 @@ library(readr)
 library(ggplot2)
 library(treemap)
 library(DT)
+library("ggcorrplot")
 ```
 
 ### Analise de Músicas do Spotify
@@ -151,4 +152,11 @@ treemap(resp04,
 ## V - Tentativa de predição ...
 
 ```{r  fig.height=7, fig.width = 11, warning = FALSE}
+modelo.dado <- df_features[c("popularity" ,"danceability","energy","valence")]
+corr <- round(cor(modelo.dado), 1)
+ggcorrplot(corr, p.mat = cor_pmat(modelo.dado),
+           hc.order = TRUE, type = "lower",
+           color = c("#FC4E07", "white", "#00AFBB"),
+           outline.col = "white", lab = TRUE)
+
 ```
