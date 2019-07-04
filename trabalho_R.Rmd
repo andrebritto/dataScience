@@ -105,16 +105,17 @@ ggplot(resp02, aes(x=resp02$qtd_toca, y=resp02$artista, color=resp02$genero)) +
 ## III - As Top 10 dos Estilosos
 
 ```{r  fig.height=7, fig.width = 11, warning = FALSE}
-artistas_10_mais <- head(resp02 %>% arrange(-qtd_toca), 10)
+generos<-resp01 %>% select (genero) %>% distinct() %>% unlist
+artistas_10_mais <- resp02 %>% arrange(-qtd_toca)
 artistas_10_mais <- artistas_10_mais['artista'] %>% distinct() %>% unlist
-
+tocadas_musica_genero_pais_continente
 resp03<-tocadas_musica_genero_pais_continente %>% 
-  select(artista, faixa, genero) %>%
-  filter(artista %in% artistas_10_mais) %>%
-arrange(artista) %>%
-  distinct() %>%
-  group_by(artista) %>%
-  top_n(10)
+  select (artista, genero,faixa) %>%
+    filter((artista %in% artistas_10_mais) & (genero %in% generos) ) %>%
+  group_by(artista, faixa) %>%
+  summarise(qtd = n()) %>%
+ arrange(-qtd) %>% top_n(10) 
+  
 ```
 
 ```{r  fig.height=7, fig.width = 11, warning = FALSE}
@@ -153,10 +154,29 @@ treemap(resp04,
 
 ```{r  fig.height=7, fig.width = 11, warning = FALSE}
 modelo.dado <- df_features[c("popularity" ,"danceability","energy","valence")]
-corr <- round(cor(modelo.dado), 1)
+rm(df_features)
+# Pegando amostra
+#lista_index <- sample(1:150000, 150000, replace=TRUE)
+#modelo.dado <- modelo.dado[lista_index,]
+
+# Analisar a correlação entre as variáveis popularidade, danceability, energy e valence"
+
+library("ggcorrplot")
+# Matriz de Coeficiente de Correlação Linear de Pearson entre as variaveis
+corr <- round(cor(modelo.dado), 3)
+corr
+
 ggcorrplot(corr, p.mat = cor_pmat(modelo.dado),
            hc.order = TRUE, type = "lower",
            color = c("#FC4E07", "white", "#00AFBB"),
            outline.col = "white", lab = TRUE)
+
+ajuste01 <- lm(modelo.dado$valence ~ modelo.dado$danceability)
+
+ajuste02 <-lm(modelo.dado$valence ~ modelo.dado$energy)
+
+summary(ajuste01)
+
+summary(ajuste02)
 
 ```

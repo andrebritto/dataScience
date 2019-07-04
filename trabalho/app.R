@@ -173,16 +173,18 @@ server <- function(input, output) {
     
     # quest03 - montar uma playlist com 10 musicas por genero com base nos artistas mais populares
     
-    artistas_10_mais <- head(resp02 %>% arrange(-qtd_toca), 10)
+    artistas_10_mais <- resp02 %>% arrange(-qtd_toca)
+    
     artistas_10_mais <- artistas_10_mais['artista'] %>% distinct() %>% unlist
     
+    tocadas_musica_genero_pais_continente
+    
     resp03<-tocadas_musica_genero_pais_continente %>% 
-        select(artista, faixa, genero) %>%
-        filter(artista %in% artistas_10_mais) %>%
-        arrange(artista) %>%
-        distinct() %>%
-        group_by(artista) %>%
-        top_n(10)
+        select (artista, genero,faixa) %>%
+        filter((artista %in% artistas_10_mais) & (genero %in% generos) ) %>%
+        group_by(artista, faixa) %>%
+        summarise(qtd = n()) %>%
+        arrange(-qtd) %>% top_n(10) 
     
     #resp03
     output$viewQ3 <- DT::renderDataTable(DT::datatable({

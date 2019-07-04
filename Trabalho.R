@@ -56,7 +56,7 @@ quest01 <-  tocadas_musica_genero_pais_continente %>%
 
 resp01 <- quest01 %>% arrange(-qtd,continente) %>% top_n(5)
 resp01 <- resp01 %>% group_by(genero) %>% mutate(percent=round(100*(qtd/sum(resp01$qtd)),2))
-resp01
+resp01  %>% arrange(continente)
 DT::datatable(resp01, class = 'cell-border stripe')
 
 
@@ -73,15 +73,21 @@ rm(quest01)
 
 # Quest02 - Quem é o artista mais popular em cada genero
 
+# Os generos
+generos<-resp01 %>% select (genero) %>% distinct() %>% unlist
+
+
 quest02 <-tocadas_musica_genero_pais_continente %>%
   select (genero, artista) %>% 
-  filter(genero %in% resp01$genero) %>%
+  filter(genero %in% generos) %>%
   group_by(genero,artista) %>%
   summarise(qtd_toca = n() ) 
 
 resp02 <- quest02 %>%  arrange(-qtd_toca) %>% top_n(1)
 
 resp02
+
+DT::datatable(resp02, class = 'cell-border stripe')
 
 rm(quest02)
 
@@ -95,18 +101,22 @@ ggplot(resp02, aes(x=resp02$qtd_toca, y=resp02$artista, color=resp02$genero)) +
 
 
 
-# quest03 - montar uma playlist com 10 musicas por genero com base nos artistas mais populares
+# quest03 - montar uma playlist com 10 musicas por artistas mais populares
 
-artistas_10_mais <- head(resp02 %>% arrange(-qtd_toca), 10)
+artistas_10_mais <- resp02 %>% arrange(-qtd_toca)
+
 artistas_10_mais <- artistas_10_mais['artista'] %>% distinct() %>% unlist
 
+tocadas_musica_genero_pais_continente
+
 resp03<-tocadas_musica_genero_pais_continente %>% 
-  select(artista, faixa, genero) %>%
-  filter(artista %in% artistas_10_mais) %>%
-arrange(artista) %>%
-  distinct() %>%
-  group_by(artista) %>%
-  top_n(10)
+  select (artista, genero,faixa) %>%
+    filter((artista %in% artistas_10_mais) & (genero %in% generos) ) %>%
+  group_by(artista, faixa) %>%
+  summarise(qtd = n()) %>%
+ arrange(-qtd) %>% top_n(10)
+  
+
 
 #resp03
  DT::datatable(resp03, class = 'cell-border stripe')
@@ -116,8 +126,6 @@ arrange(artista) %>%
  #artis_pais_continente <-tocadas_musica_genero_pais_continente [sample(nrow(tocadas_musica_genero_pais_continente),100),c('artista', 'pais', "continente")]
  
  artis_pais_continente <-tocadas_musica_genero_pais_continente [,c('artista', 'pais', "continente")]
- 
- artis_pais_continente %>% arrange(artista)
  
  resp_aux <-artis_pais_continente %>% group_by(artista) %>% count(continente) %>% arrange(-n)
  resp_aux <- head(resp_aux,100)
@@ -142,14 +150,13 @@ arrange(artista) %>%
  ) 
 
  
- 
- rm(musica_genero, df_paises,tocadas_musica_genero, artistas_10_mais)
-
-
+rm(resp01, resp02, resp03, resp04)
+rm(tocadas_musica_genero, tocadas_musica_genero_pais_continente)
+rm(artis_pais_continente, artistas_10_mais)
 ## Validar popularidade
 # Verificação de correlação entre a indicador de popularidade 
 modelo.dado <- df_features[c("popularity" ,"danceability","energy","valence")]
-
+rm(df_features)
 # Pegando amostra
 #lista_index <- sample(1:150000, 150000, replace=TRUE)
 #modelo.dado <- modelo.dado[lista_index,]
@@ -157,24 +164,26 @@ modelo.dado <- df_features[c("popularity" ,"danceability","energy","valence")]
 # Analisar a correlação entre as variáveis popularidade, danceability, energy e valence"
 
 library("ggcorrplot")
-# Compute a correlation matrix
-corr <- round(cor(modelo.dado), 1)
+# Matriz de Coeficiente de Correlação Linear de Pearson entre as variaveis
+corr <- round(cor(modelo.dado), 3)
 corr
-# Os coeficientes próximos de zero mostram uma correlação fraca e os proximos de 1 uma correlação forte
 
-# Visualização dos coeficientes de correlação
 ggcorrplot(corr, p.mat = cor_pmat(modelo.dado),
            hc.order = TRUE, type = "lower",
            color = c("#FC4E07", "white", "#00AFBB"),
            outline.col = "white", lab = TRUE)
 
+ajuste01 <- lm(modelo.dado$valence ~ modelo.dado$danceability)
+
+ajuste02 <-lm(modelo.dado$valence ~ modelo.dado$energy)
+
+summary(ajuste01)
+
+summary(ajuste02)
+
+
+# Os coeficientes próximos de zero mostram uma correlação fraca e os proximos de 1 uma correlação forte
+
+
 # As correlações mais fortes são: valence com danceability e valence com energy 
 # A variavel popularidade não é explicada por nenhuma das relações
-
-modelo.ajuste01 <- lm(modelo.dado$valence ~ modelo.dado$danceability)
-summary(modelo.ajuste01)
-ggplot(modelo.dado, aes(x=modelo.dado$valence, y=modelo.dado$danceability)) + 
-  geom_point() +
-  geom_smooth(method=lm)
-
-  
